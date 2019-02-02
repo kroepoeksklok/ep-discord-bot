@@ -1,19 +1,12 @@
-const moment = require('moment/moment.js');
+const moment = require('moment');
+const createLogger = require('logging');
+const days = require('./days.js');
 
 class Events {
   constructor() {
-    this.monday = 1;
-    this.tuesday = 2;
-    this.wednesday = 3;
-    this.thursday = 4;
-    this.friday = 5;
-    this.saturday = 6;
-    this.sunday = 7;
-
     this.weekendWarStartEnd = 20;
     this.weekWarStartEnd = 11;
-
-    this.warGoingOn = false;
+    this.logger = createLogger.default('Events');
   }
 
   getNextWeekWednesdayWar(referenceDate) {
@@ -32,7 +25,8 @@ class Events {
     momentDate.set({
       hour: startingHour,
       minute: 0,
-      second: 0
+      second: 0,
+      millisecond: 0
     });
   }
 
@@ -42,7 +36,7 @@ class Events {
 
     let nextWarDate;
 
-    if (dayOfWeek == this.saturday) {
+    if (dayOfWeek == days.SATURDAY) {
       if (hourOfDay < this.weekendWarStartEnd) {
         nextWarDate = moment.utc(referenceDate);
         this.setTime(nextWarDate, this.weekendWarStartEnd);
@@ -51,15 +45,15 @@ class Events {
       }
     }
 
-    if(dayOfWeek == this.sunday) {
+    if(dayOfWeek == days.SUNDAY) {
       nextWarDate = this.getNextWeekWednesdayWar(referenceDate);
     }
 
-    if(dayOfWeek == this.monday || dayOfWeek == this.tuesday){
+    if(dayOfWeek == days.MONDAY || dayOfWeek == days.TUESDAY){
       nextWarDate = this.getNextWarInSameWeek(referenceDate, this.wednesday, this.weekWarStartEnd);
     }
 
-    if(dayOfWeek == this.wednesday) {
+    if(dayOfWeek == days.WEDNESDAY) {
       if(hourOfDay < this.weekWarStartEnd) {
         nextWarDate = moment.utc(referenceDate);
         this.setTime(nextWarDate, this.weekWarStartEnd);
@@ -68,11 +62,11 @@ class Events {
       }
     }
 
-    if(dayOfWeek == this.thursday || dayOfWeek == this.friday){
+    if(dayOfWeek == days.THURSDAY || dayOfWeek == days.FRIDAY){
       nextWarDate = this.getNextWarInSameWeek(referenceDate, this.saturday, this.weekendWarStartEnd);
     }
 
-    console.log('Next war:', nextWarDate.format());
+    this.logger.info('Next war:', nextWarDate.format());
 
     return nextWarDate;
   }

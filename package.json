@@ -1,0 +1,12 @@
+{
+  "name": "ep-discord-bot",
+  "main": "bot.js",
+  "scripts": {
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "discord.js": "^11.4.2",
+    "logging": "^3.2.0",
+    "moment": "^2.24.0"
+  }
+}

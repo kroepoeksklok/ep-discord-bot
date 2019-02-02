@@ -1,11 +1,48 @@
 const Discord = require('discord.js');
+const moment = require('moment');
+const fs = require('fs');
+const createLogger = require('logging');
+
 const Jokes = require('./Jokes.js');
-const moment = require('moment/moment.js');
-const client = new Discord.Client();
 const Events = require('./events.js');
 
+const logger = createLogger.default('Bot');
+const client = new Discord.Client();
+
+let warData = {};
+
 client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag}!`);
+  logger.info(`Logged in as ${client.user.tag}!`);
+
+  warData = JSON.parse(fs.readFileSync('file', 'utf8'));
+  logger.info(`${warData.nextWar}`);
+  logger.info(`${warData.announcedWar}`);
+
+  const nextWarDate = Events.nextWarDate(moment.utc());
+  const storedWarDate = moment.utc(warData.nextWar);
+
+  logger.info(nextWarDate);
+  logger.info(storedWarDate);
+
+  if(nextWarDate.isSame(storedWarDate)){
+    logger.info('Same war dates');
+    if(warData.announcedWar){
+      logger.info('Already announced');
+    } else {
+      logger.info('Not yet announced');
+    }
+  } else {
+    logger.info('Different war dates');
+    warData.nextWar = nextWarDate.format();
+    warData.announcedWar = false;
+
+    fs.writeFile('file', JSON.stringify(warData), function(err) {
+      if(err){
+        logger.error(err);
+      }
+      logger.info('War data saved');
+    });
+  }
 });
 
 client.on('message', msg => {
@@ -13,6 +50,7 @@ client.on('message', msg => {
     msg.reply('pong');
     msg.reply(Jokes.getJoke());
   }
+
   if (msg.content === '!nextwar') {
     const startsIn = Events.nextWar(moment.utc());
     const dur = moment.duration(startsIn);
