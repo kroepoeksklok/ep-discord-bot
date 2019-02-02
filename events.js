@@ -56,7 +56,8 @@ class Events {
     }
 
     if(dayOfWeek == days.WEDNESDAY) {
-      if(hourOfDay < this.weekWarStartEnd) {
+      this.logger.info(`hourOfDay = ${hourOfDay}`);
+      if(hourOfDay < this.weekWarHourStartEnd) {
         nextWarDate = moment.utc(referenceDate);
         this.setTime(nextWarDate, this.weekWarHourStartEnd, this.weekWarMinuteStartEnd);
       } else {
@@ -73,9 +74,9 @@ class Events {
     return nextWarDate;
   }
 
-  nextWar(referenceDate) {
+  untilNextWar(referenceDate) {
     const nextWarStart = this.nextWarDate(referenceDate);
-    return nextWarStart.diff(referenceDate);
+    return moment.duration(nextWarStart.diff(referenceDate));
   }
 }
 
