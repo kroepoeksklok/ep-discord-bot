@@ -4,27 +4,29 @@ const days = require('./days.js');
 
 class Events {
   constructor() {
-    this.weekendWarStartEnd = 20;
-    this.weekWarStartEnd = 11;
+    this.weekendWarHourStartEnd = 18;
+    this.weekendWarMinuteStartEnd = 30;
+    this.weekWarHourStartEnd = 11;
+    this.weekWarMinuteStartEnd = 0;
     this.logger = createLogger.default('Events');
   }
 
-  getNextWeekWednesdayWar(referenceDate) {
-    const nextWednesday = moment.utc(referenceDate).add(1, 'w').isoWeekday(this.wednesday);
-    this.setTime(nextWednesday, this.weekWarStartEnd);
-    return nextWednesday;
-  }
+  getNextWarDate(referenceDate, isoDay, addWeek, startingHour, startingMinute) {
+    let nextWarDay = moment.utc(referenceDate);
 
-  getNextWarInSameWeek(referenceDate, isoDay, startingHour) {
-    const nextWarDay = moment.utc(referenceDate).isoWeekday(isoDay);
-    this.setTime(nextWarDay, startingHour);
+    if(addWeek) {
+      nextWarDay = nextWarDay.add(1, 'w');
+    }
+
+    nextWarDay = nextWarDay.isoWeekday(isoDay);
+    this.setTime(nextWarDay, startingHour, startingMinute);
     return nextWarDay;
   }
 
-  setTime(momentDate, startingHour) {
+  setTime(momentDate, startingHour, startingMinute) {
     momentDate.set({
       hour: startingHour,
-      minute: 0,
+      minute: startingMinute,
       second: 0,
       millisecond: 0
     });
@@ -37,33 +39,33 @@ class Events {
     let nextWarDate;
 
     if (dayOfWeek == days.SATURDAY) {
-      if (hourOfDay < this.weekendWarStartEnd) {
+      if (hourOfDay < this.weekendWarHourStartEnd) {
         nextWarDate = moment.utc(referenceDate);
-        this.setTime(nextWarDate, this.weekendWarStartEnd);
+        this.setTime(nextWarDate, this.weekendWarHourStartEnd, this.weekendWarMinuteStartEnd);
       } else {
-        nextWarDate = this.getNextWeekWednesdayWar(referenceDate);
+        nextWarDate = this.getNextWarDate(referenceDate, days.WEDNESDAY, true, this.weekWarHourStartEnd, this.weekWarMinuteStartEnd);
       }
     }
 
     if(dayOfWeek == days.SUNDAY) {
-      nextWarDate = this.getNextWeekWednesdayWar(referenceDate);
+      nextWarDate = this.getNextWarDate(referenceDate, days.WEDNESDAY, true, this.weekWarHourStartEnd, this.weekWarMinuteStartEnd);
     }
 
-    if(dayOfWeek == days.MONDAY || dayOfWeek == days.TUESDAY){
-      nextWarDate = this.getNextWarInSameWeek(referenceDate, this.wednesday, this.weekWarStartEnd);
+    if(dayOfWeek == days.MONDAY || dayOfWeek == days.TUESDAY) {
+      nextWarDate = this.getNextWarDate(referenceDate, days.WEDNESDAY, false, this.weekWarHourStartEnd, this.weekWarMinuteStartEnd);
     }
 
     if(dayOfWeek == days.WEDNESDAY) {
       if(hourOfDay < this.weekWarStartEnd) {
         nextWarDate = moment.utc(referenceDate);
-        this.setTime(nextWarDate, this.weekWarStartEnd);
+        this.setTime(nextWarDate, this.weekWarHourStartEnd, this.weekWarMinuteStartEnd);
       } else {
-        nextWarDate = this.getNextWarInSameWeek(referenceDate, this.saturday, this.weekendWarStartEnd);
+        nextWarDate = this.getNextWarDate(referenceDate, days.SATURDAY, false, this.weekendWarHourStartEnd, this.weekendWarMinuteStartEnd);
       }
     }
 
     if(dayOfWeek == days.THURSDAY || dayOfWeek == days.FRIDAY){
-      nextWarDate = this.getNextWarInSameWeek(referenceDate, this.saturday, this.weekendWarStartEnd);
+      nextWarDate = this.getNextWarDate(referenceDate, days.SATURDAY, false, this.weekendWarHourStartEnd, this.weekendWarMinuteStartEnd);
     }
 
     this.logger.info('Next war:', nextWarDate.format());
@@ -72,7 +74,7 @@ class Events {
   }
 
   nextWar(referenceDate) {
-    let nextWarStart = this.nextWarDate(referenceDate);
+    const nextWarStart = this.nextWarDate(referenceDate);
     return nextWarStart.diff(referenceDate);
   }
 }
