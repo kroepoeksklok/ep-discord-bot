@@ -6,8 +6,8 @@ class Events {
   constructor() {
     this.weekendWarHourStartEnd = 18;
     this.weekendWarMinuteStartEnd = 30;
-    this.weekWarHourStartEnd = 11;
-    this.weekWarMinuteStartEnd = 0;
+    this.weekWarHourStartEnd = 10;
+    this.weekWarMinuteStartEnd = 30;
     this.logger = createLogger.default('Events');
   }
 
