@@ -1,77 +1,132 @@
 const Discord = require('discord.js');
 const config = require('./config');
 const createLogger = require('logging');
+const Events = require('./events');
+const moment = require('moment');
+const fs = require('fs');
+const Jokes = require('./jokes');
 
 class Bot {
   constructor() {
-    const bot = new Discord.Client({
+    const self = this;
+
+    this.lastJokeAt = moment.utc().add(-1, 'd');
+    this.bot = new Discord.Client({
       autoReconnect: true
     });
 
-    const logger = require('logging');
+    this.logger = createLogger.default('Bot');
+    
+    // this.sendMessage = (channel, message) => {
+    //   logger.info(`Sending message: ${message}`);
+    //   channel.send( message );
+    // };
 
-    this.sendMessage = (channel, message) => {
-      logger.info(`Sending message: ${message}`);
-      channel.send( message );
-    };
-
-    bot.on('ready', function () {
-      logger.info(`Logged in as ${client.user.tag}!`);
-
-      const guildsToSendHelloPhraseTo = config.guildsToSendHelloPhraseTo.split(',');
-      const channelsToSendHelloPhraseTo = config.channelsToSendHelloPhraseTo.split(',');
-
-      bot.guilds.forEach(guild => {
-        if(guildsToSendHelloPhraseTo.find( g => guild.name === g)) {
-          guild.channels.forEach(channel => {
-            if( channelsToSendHelloPhraseTo.find(c => channel.name === c)) {
-              channel.send(config.helloMessage);
-            }
-          });
-        }
-      });
+    this.bot.on('ready', function () {
+      self.printHelloMessage();
     });
 
-    bot.client.on('message', msg => {
-      msg.reply(`${output}`);
-
-      if (msg.content === 'ping') {
-        msg.reply('pong');
+    this.bot.on('message', msg => {
+      if(self.checkCommands(msg)){
+        return;
       }
 
-      if(message.content === '!nextwar') {
-        const timeUntilNextWar = Events.untilNextWar(moment.utc());
-        const numDays = timeUntilNextWar.days();
-        const numHours = timeUntilNextWar.hours();
-        const numMinutes = timeUntilNextWar.minutes();
-        const numSeconds = timeUntilNextWar.seconds();
+      self.checkPhrases(msg);
+    });
+  }
 
-        let output = 'The next war starts in ';
-        if (numDays > 0) {
-          output = output.concat(`${numDays} days, ${numHours} hours, ${numMinutes} minutes and ${numSeconds} seconds.`);
-        } else {
-          if (numHours > 0) {
-            output = output.concat(`${numHours} hours, ${numMinutes} minutes and ${numSeconds} seconds.`);
-          } else {
-            if (numMinutes > 0) {
-              output = output.concat(`${numMinutes} minutes and ${numSeconds} seconds.`);
-            } else {
-              output = output.concat(`${numSeconds} seconds.`);
-            }
+  login() {
+    this.bot.login(config.token);
+  }
+
+  printHelloMessage() {
+    this.logger.info(`Logged in as ${this.bot.user.tag}!`);
+
+    const guildsToSendHelloPhraseTo = config.guildsToSendHelloPhraseTo.split(',');
+    const channelsToSendHelloPhraseTo = config.channelsToSendHelloPhraseTo.split(',');
+
+    this.bot.guilds.forEach(guild => {
+      if(guildsToSendHelloPhraseTo.find(g => guild.name === g)) {
+        guild.channels.forEach(channel => {
+          if( channelsToSendHelloPhraseTo.find(c => channel.name === c)) {
+            channel.send(config.helloMessage);
           }
-        }
-
-        msg.reply(`${output}`);
+        });
       }
     });
+  }
+
+  checkCommands(msg) {
+    if (msg.content === config.commands.ping) {
+      this.logger.info(`${config.commands.ping} command was found`)
+      msg.reply('pong');
+      return true;
+    }
+
+    if(msg.content === config.commands.nextwar) {
+      this.logger.info(`${config.commands.nextwar} command was found`)
+      this.replyWithNextWarDate(msg);
+      return true;
+    }
+
+    this.logger.info('No commands were found');
+    return false;
+  }
+
+  checkPhrases(msg){
+    const messageWithoutCommas = this.getStrippedMessage(msg);
+
+    if(this.containsRussia(messageWithoutCommas)) {
+      const now = moment.utc();
+      const timeSinceLastJoke = now.diff(this.lastJokeAt);
+      
+      if(timeSinceLastJoke >= config.maximumTimeWithoutJokes) {
+        this.lastJokeAt = now;
+        const nextJoke = Jokes.getJoke();
+        msg.reply(`You mentioned Russia, so here's a joke about russians:\n${nextJoke}`);
+      } else {
+        this.logger.info(`Last joke was ${timeSinceLastJoke}ms ago. Threshold is at ${config.maximumTimeWithoutJokes}ms.`);
+      }
+    }
+  }
+
+  getStrippedMessage(message) {
+    const uppercaseMessage = message.content.toUpperCase();
+    return uppercaseMessage.replace(',', '');
+  }
+
+  containsRussia(messageWithoutCommas) {
+    return messageWithoutCommas.includes(config.phrases.russia);
+  }
+
+  replyWithNextWarDate(msg) {
+    const timeUntilNextWar = Events.untilNextWar(moment.utc());
+    const numDays = timeUntilNextWar.days();
+    const numHours = timeUntilNextWar.hours();
+    const numMinutes = timeUntilNextWar.minutes();
+    const numSeconds = timeUntilNextWar.seconds();
+
+    let output = 'The next war starts in ';
+    if (numDays > 0) {
+      output = output.concat(`${numDays} days, ${numHours} hours, ${numMinutes} minutes and ${numSeconds} seconds.`);
+    } else {
+      if (numHours > 0) {
+        output = output.concat(`${numHours} hours, ${numMinutes} minutes and ${numSeconds} seconds.`);
+      } else {
+        if (numMinutes > 0) {
+          output = output.concat(`${numMinutes} minutes and ${numSeconds} seconds.`);
+        } else {
+          output = output.concat(`${numSeconds} seconds.`);
+        }
+      }
+    }
+
+    msg.reply(`${output}`);
   }
 }
 
 module.exports = Bot;
-// const Discord = require('discord.js');
-// const moment = require('moment');
 // const fs = require('fs');
-// const createLogger = require('logging');
 
 // const Jokes = require('./Jokes.js');
 // const Events = require('./events.js');
@@ -135,37 +190,3 @@ module.exports = Bot;
 //     writeWarDataToFile();
 //   }
 // });
-
-// client.on('message', msg => {
-//   if (msg.content === 'ping') {
-//     msg.reply('pong');
-//     msg.reply(Jokes.getJoke());
-//   }
-
-//   if (msg.content === '!nextwar') {
-//     const timeUntilNextWar = Events.untilNextWar(moment.utc());
-//     const numDays = timeUntilNextWar.days();
-//     const numHours = timeUntilNextWar.hours();
-//     const numMinutes = timeUntilNextWar.minutes();
-//     const numSeconds = timeUntilNextWar.seconds();
-
-//     let output = 'The next war starts in ';
-//     if (numDays > 0) {
-//       output = output.concat(`${numDays} days, ${numHours} hours, ${numMinutes} minutes and ${numSeconds} seconds.`);
-//     } else {
-//       if (numHours > 0) {
-//         output = output.concat(`${numHours} hours, ${numMinutes} minutes and ${numSeconds} seconds.`);
-//       } else {
-//         if (numMinutes > 0) {
-//           output = output.concat(`${numMinutes} minutes and ${numSeconds} seconds.`);
-//         } else {
-//           output = output.concat(`${numSeconds} seconds.`);
-//         }
-//       }
-//     }
-
-//     msg.reply(`${output}`);
-//   }
-// });
-
-// client.login('{token}');
