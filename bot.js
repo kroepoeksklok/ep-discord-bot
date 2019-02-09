@@ -88,12 +88,12 @@ class Bot {
     if(this.mana >= 100) return true;
 
     if(this.mana > 0 && this.mana < 20 && !this.sentFirstManaMessage) {
-      this.sendMessage('general', '/me has started to gather mana');
+      this.sendMessage('*starts gathering mana*');
       this.sentFirstManaMessage = true;
     }
 
     if(this.mana >=97 && this.mana < 100 && !this.sentSecondManaMessage){
-      this.sendMessage('general', '/me has started to glow');
+      this.sendMessage('*has begun to glow*');
       this.sentSecondManaMessage = true;
     }
 
@@ -105,7 +105,7 @@ class Bot {
     this.sentSecondManaMessage = false;
     this.mana = 0;
     const randomUser = this.bot.users.random();
-    this.sendMessage('general', `/me uses Harmonic Slam on ${randomUser.tag}!`);
+    this.sendMessage(`*uses uses Harmonic Slam on ${randomUser.tag}!*`);
   }
 
   announceWarIfNecessary(referenceDate) {
@@ -126,13 +126,21 @@ class Bot {
     }
   }
 
-  sendMessage(channelName, message) {
-    this.bot.channels.find('name', channelName).send(message);
+  sendMessage(message, channelId) {
+    let cId;
 
+    if(!channelId) {
+      cId = config.idDefaultChannel;
+    } else {
+      cId = channelId;
+    }
+
+    this.logger.info(`Sending the following message to channel ${cId}: ${message}`);
+    this.bot.channels.get(cId).send(message);
   }
 
   announceWar(minutesUntilNextWar) {
-    this.sendMessage(config.channelToAnnounceWarIn, `@everyone: the next war starts in ${minutesUntilNextWar} minutes.`);
+    this.sendMessage(`@everyone: the next war starts in ${minutesUntilNextWar} minutes.`, config.idWarChannel);
   }
 
   login() {
