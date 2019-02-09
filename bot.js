@@ -3,8 +3,8 @@ const config = require('./config');
 const createLogger = require('logging');
 const Events = require('./events');
 const moment = require('moment');
-const fs = require('fs');
 const Jokes = require('./jokes');
+const WarData = require('./wardata');
 
 class Bot {
   constructor() {
@@ -14,16 +14,29 @@ class Bot {
     this.bot = new Discord.Client({
       autoReconnect: true
     });
-
+    this.mana = 0;
+    this.sentFirstManaMessage = false;
+    this.sentSecondManaMessage = false;
     this.logger = createLogger.default('Bot');
-    
-    // this.sendMessage = (channel, message) => {
-    //   logger.info(`Sending message: ${message}`);
-    //   channel.send( message );
-    // };
 
     this.bot.on('ready', function () {
       self.printHelloMessage();
+
+      const today = moment.utc();
+      const nextWarDate = Events.nextWarDate(today);
+
+      if(!WarData.loadWarData()){
+        WarData.setWarDate(nextWarDate);
+        WarData.setIsAnnounced(false);
+      } else {
+        if(!nextWarDate.isSame(WarData.getWarDate())){
+          WarData.setWarDate(nextWarDate);
+          WarData.setIsAnnounced(false);
+        }
+      }
+
+      self.announceWarIfNecessary(today);
+      WarData.saveWarData();
     });
 
     this.bot.on('message', msg => {
@@ -33,6 +46,93 @@ class Bot {
 
       self.checkPhrases(msg);
     });
+
+    
+    setInterval(function() {
+      self.logger.info('War timer expired.');      
+
+      const today = moment.utc();
+      const nextWarDate = Events.nextWarDate(today);
+
+      if(!nextWarDate.isSame(WarData.getWarDate(today))){
+        WarData.setWarDate(nextWarDate);
+        WarData.setIsAnnounced(false);
+      }
+
+      self.announceWarIfNecessary(today);
+      WarData.saveWarData();
+    }, 1200000); // Run every 20 minutes
+
+
+    (function loop() {
+      const random = Math.round((Math.random() * (60000)) + 60000); // Generates a random number between 60000 and 120000
+
+      setTimeout(function() {
+        self.logger.info('Mana timer expired');
+        self.accumulateMana();
+        if(self.checkMana()) {
+          self.useHarmonicSlam();
+        }
+        loop();
+      }, random);
+    }());
+  }
+
+  accumulateMana() {
+    const manaIncrease = Math.floor((Math.random() * 3) + 1); // Generates 1-3 mana.
+    this.mana += manaIncrease;
+    this.logger.info(`Mana: ${this.mana} / 100`);
+  }
+
+  checkMana() {
+    if(this.mana >= 100) return true;
+
+    if(this.mana > 0 && this.mana < 20 && !this.sentFirstManaMessage) {
+      this.sendMessage('general', '/me has started to gather mana');
+      this.sentFirstManaMessage = true;
+    }
+
+    if(this.mana >=97 && this.mana < 100 && !this.sentSecondManaMessage){
+      this.sendMessage('general', '/me has started to glow');
+      this.sentSecondManaMessage = true;
+    }
+
+    return false;
+  }
+
+  useHarmonicSlam() {
+    this.sentFirstManaMessage = false;
+    this.sentSecondManaMessage = false;
+    this.mana = 0;
+    const randomUser = this.bot.users.random();
+    this.sendMessage('general', `/me uses Harmonic Slam on ${randomUser.tag}!`);
+  }
+
+  announceWarIfNecessary(referenceDate) {
+    if(WarData.warIsAnnounced()){
+      this.logger.info(`The war of ${WarData.getWarDate().format()} has already been announced`);
+    } else {
+      this.logger.info(`The war of ${WarData.getWarDate().format()} has not yet been announced`);
+      
+      const minutesUntilNextWar = Math.round(Events.untilNextWar(referenceDate).as('minutes'));
+
+      if(minutesUntilNextWar <= config.minutesToAnnounceWar) {
+        this.logger.info(`${minutesUntilNextWar} <= ${config.minutesToAnnounceWar}: annoucing war`);
+        this.announceWar(minutesUntilNextWar);
+        WarData.setIsAnnounced(true);
+      } else {
+        this.logger.info(`${minutesUntilNextWar} > ${config.minutesToAnnounceWar}: not annoucing war`);
+      }
+    }
+  }
+
+  sendMessage(channelName, message) {
+    this.bot.channels.find('name', channelName).send(message);
+
+  }
+
+  announceWar(minutesUntilNextWar) {
+    this.sendMessage(config.channelToAnnounceWarIn, `@everyone: the next war starts in ${minutesUntilNextWar} minutes.`);
   }
 
   login() {
@@ -58,13 +158,13 @@ class Bot {
 
   checkCommands(msg) {
     if (msg.content === config.commands.ping) {
-      this.logger.info(`${config.commands.ping} command was found`)
+      this.logger.info(`${config.commands.ping} command was found`);
       msg.reply('pong');
       return true;
     }
 
     if(msg.content === config.commands.nextwar) {
-      this.logger.info(`${config.commands.nextwar} command was found`)
+      this.logger.info(`${config.commands.nextwar} command was found`);
       this.replyWithNextWarDate(msg);
       return true;
     }
@@ -83,7 +183,7 @@ class Bot {
       if(timeSinceLastJoke >= config.maximumTimeWithoutJokes) {
         this.lastJokeAt = now;
         const nextJoke = Jokes.getJoke();
-        msg.reply(`You mentioned Russia, so here's a joke about russians:\n${nextJoke}`);
+        msg.reply(`you mentioned Russia, so here's a joke about russians:\n${nextJoke}`);
       } else {
         this.logger.info(`Last joke was ${timeSinceLastJoke}ms ago. Threshold is at ${config.maximumTimeWithoutJokes}ms.`);
       }
@@ -126,67 +226,3 @@ class Bot {
 }
 
 module.exports = Bot;
-// const fs = require('fs');
-
-// const Jokes = require('./Jokes.js');
-// const Events = require('./events.js');
-
-// const logger = createLogger.default('Bot');
-// const client = new Discord.Client();
-
-// let warData = {};
-
-// function ShouldInformThatWarWillBegin(timeUntilNextWar) {
-//   return timeUntilNextWar.hours() <= 1 && !warData.announcedWar;
-// }
-
-// function InformEveryoneThatWarWillBeginSoon() {
-//   logger.info('Informing everyone that war will begin soon');
-// }
-
-// function writeWarDataToFile() {
-//   fs.writeFile('file', JSON.stringify(warData), function(err) {
-//     if(err){
-//       logger.error(err);
-//     }
-//     logger.info('War data saved');
-//   });
-// }
-
-// function setWarData(announcedWar, nextWarMoment) {
-//   if(!nextWarMoment)  warData.nextWar = nextWarMoment;
-//   warData.announcedWar = announcedWar;
-// }
-
-// client.on('ready', () => {
-//   logger.info(`Logged in as ${client.user.tag}!`);
-
-//   //const today = moment.utc();
-//   const today = moment.utc('2019-02-06T10:15:00'); 
-  
-//   warData = JSON.parse(fs.readFileSync('file', 'utf8'));
-//   // logger.info(`${warData.nextWar}`);
-//   // logger.info(`${warData.announcedWar}`);
-
-//   //const nextWarDate = Events.nextWarDate(moment.utc());
-//   const nextWarDate = Events.nextWarDate(today);
-//   const storedWarDate = moment.utc(warData.nextWar);
-
-//   logger.info(`nextWarDate = ${nextWarDate}`);
-//   logger.info(`storedWarDate = ${storedWarDate}`);
-
-//   if(nextWarDate.isSame(storedWarDate)) {
-//     //const timeUntilNextWar = Events.untilNextWar(moment.utc());
-//     const timeUntilNextWar = Events.untilNextWar(today);
-
-//     if(ShouldInformThatWarWillBegin(timeUntilNextWar)) {
-//       InformEveryoneThatWarWillBeginSoon();
-//       setWarData(true);
-//       writeWarDataToFile();
-//     }
-//   } else {
-//     logger.info('Different war dates');
-//     setWarData(false,nextWarDate.format());
-//     writeWarDataToFile();
-//   }
-// });
