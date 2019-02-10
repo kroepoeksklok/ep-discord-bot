@@ -177,6 +177,12 @@ class Bot {
       return true;
     }
 
+    if(msg.content === config.commands.farmred){
+      this.logger.info(`${config.commands.nextwar} command was found`);
+      msg.reply('The best place to farm red enemies is 19.4, 19.6, 20.4 and 20.7. For lower levels / less energy, use the following levels: 2.2, 5.8, 11.6 and 13.1');
+      return true;
+    }
+
     this.logger.info('No commands were found');
     return false;
   }
