@@ -65,7 +65,7 @@ class Bot {
 
 
     (function loop() {
-      const random = Math.round((Math.random() * (60000)) + 60000); // Generates a random number between 60000 and 120000
+      const random = Math.round((Math.random() * (600000)) + 600000); // Generates a random number between 600000 and 1200000 (10m, 20m)
 
       setTimeout(function() {
         self.logger.info('Mana timer expired');
@@ -105,7 +105,7 @@ class Bot {
     this.sentSecondManaMessage = false;
     this.mana = 0;
     const randomUser = this.bot.users.random();
-    this.sendMessage(`*uses uses Harmonic Slam on ${randomUser.tag}!*`);
+    this.sendMessage(`*uses Harmonic Slam on @${randomUser.tag}!*`);
   }
 
   announceWarIfNecessary(referenceDate) {
