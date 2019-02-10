@@ -5,8 +5,8 @@ module.exports = {
     'russia': 'RUSSIA',
     'goodBot': 'GOOD BOT'
   },
-  'guildsToSendHelloPhraseTo': '{comma_delimited_server_list}',
-  'channelsToSendHelloPhraseTo': '{comma_delimited_channel_list}',
+  'guildsToSendHelloPhraseTo': '{comma_delimited_server_name_list}',
+  'channelsToSendHelloPhraseTo': '{comma_delimited_channel_name_list}',
   'helloMessage': ':notes: Don\'t yooouuu, forget about meeeee! :notes:',
   'commands': {
     'nextwar': '!nextwar',
