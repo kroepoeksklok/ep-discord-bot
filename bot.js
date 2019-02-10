@@ -188,7 +188,12 @@ class Bot {
     }
 
     if(!commandFound && msg.content === config.commands.farmgreen){
-      msg.reply('The best place to farm blue enemies is 6.3, 6.6, 7.5 and 17.5');
+      msg.reply('The best place to farm green enemies is 6.3, 6.6, 7.5 and 17.5');
+      commandFound = true;
+    }
+
+    if(!commandFound && msg.content === config.commands.farmyellow){
+      msg.reply('The best place to farm yellow enemies is 9.4, 10.6, 12.3 and 16.3');
       commandFound = true;
     }
 

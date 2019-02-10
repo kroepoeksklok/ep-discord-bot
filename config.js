@@ -13,7 +13,8 @@ module.exports = {
     'ping': 'ping',
     'farmred': '!farmred',
     'farmblue': '!farmblue',
-    'farmgreen': '!farmgreen'
+    'farmgreen': '!farmgreen',
+    'farmyellow': '!farmyellow'
   },
   'minutesToAnnounceWar': 60,
   'idDefaultChannel': '{default_channel_id}',
