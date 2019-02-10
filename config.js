@@ -14,7 +14,8 @@ module.exports = {
     'farmred': '!farmred',
     'farmblue': '!farmblue',
     'farmgreen': '!farmgreen',
-    'farmyellow': '!farmyellow'
+    'farmyellow': '!farmyellow',
+    'farmpurple': '!farmpurple'
   },
   'minutesToAnnounceWar': 60,
   'idDefaultChannel': '{default_channel_id}',

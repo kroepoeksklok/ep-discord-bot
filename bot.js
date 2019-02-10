@@ -197,6 +197,11 @@ class Bot {
       commandFound = true;
     }
 
+    if(!commandFound && msg.content === config.commands.farmpurple){
+      msg.reply('The best place to farm purple enemies is 3.4, 4.3, 5.5, 8.4, 10.4, 11.7 and 12.5');
+      commandFound = true;
+    }
+
     if(commandFound){
       this.logger.info(`${msg.content} command was found`);
     } else {
