@@ -179,27 +179,27 @@ class Bot {
     }
 
     if(!commandFound && msg.content === config.commands.farmred){
-      msg.reply('The best place to farm red enemies is 19.4, 19.6, 20.4 and 20.7. For lower levels / less energy, use the following levels: 2.2, 5.8, 11.6 and 13.1');
+      msg.reply('the best place to farm red enemies is 19.4, 19.6, 20.4 and 20.7. For lower levels / less energy, use the following levels: 2.2, 5.8, 11.6 and 13.1');
       commandFound = true;
     }
 
     if(!commandFound && msg.content === config.commands.farmblue){
-      msg.reply('The best place to farm blue enemies is 8.1, 8.3, 8.5, 9.1, 9.3, 13.5 and 13.8');
+      msg.reply('the best place to farm blue enemies is 8.1, 8.3, 8.5, 9.1, 9.3, 13.5 and 13.8');
       commandFound = true;
     }
 
     if(!commandFound && msg.content === config.commands.farmgreen){
-      msg.reply('The best place to farm green enemies is 6.3, 6.6, 7.5 and 17.5');
+      msg.reply('the best place to farm green enemies is 6.3, 6.6, 7.5 and 17.5');
       commandFound = true;
     }
 
     if(!commandFound && msg.content === config.commands.farmyellow){
-      msg.reply('The best place to farm yellow enemies is 9.4, 10.6, 12.3 and 16.3');
+      msg.reply('the best place to farm yellow enemies is 9.4, 10.6, 12.3 and 16.3');
       commandFound = true;
     }
 
     if(!commandFound && msg.content === config.commands.farmpurple){
-      msg.reply('The best place to farm purple enemies is 3.4, 4.3, 5.5, 8.4, 10.4, 11.7 and 12.5');
+      msg.reply('the best place to farm purple enemies is 3.4, 4.3, 5.5, 8.4, 10.4, 11.7 and 12.5');
       commandFound = true;
     }
 
@@ -215,7 +215,7 @@ class Bot {
   checkPhrases(msg){
     const messageWithoutCommas = this.getStrippedMessage(msg);
 
-    if(this.containsRussia(messageWithoutCommas)) {
+    if(messageWithoutCommas.includes(config.phrases.russia)) {
       const now = moment.utc();
       const timeSinceLastJoke = now.diff(this.lastJokeAt);
       
@@ -227,15 +227,15 @@ class Bot {
         this.logger.info(`Last joke was ${timeSinceLastJoke}ms ago. Threshold is at ${config.maximumTimeWithoutJokes}ms.`);
       }
     }
+
+    if(messageWithoutCommas.includes(config.phrases.goodBot)){
+      msg.reply('why thank you!');
+    }
   }
 
   getStrippedMessage(message) {
     const uppercaseMessage = message.content.toUpperCase();
     return uppercaseMessage.replace(',', '');
-  }
-
-  containsRussia(messageWithoutCommas) {
-    return messageWithoutCommas.includes(config.phrases.russia);
   }
 
   replyWithNextWarDate(msg) {
