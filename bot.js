@@ -165,38 +165,40 @@ class Bot {
   }
 
   checkCommands(msg) {
+    let commandFound = false;
+    
     if (msg.content === config.commands.ping) {
-      this.logger.info(`${config.commands.ping} command was found`);
       msg.reply('pong');
-      return true;
+      commandFound = true;
     }
 
-    if(msg.content === config.commands.nextwar) {
-      this.logger.info(`${config.commands.nextwar} command was found`);
+    if(!commandFound && msg.content === config.commands.nextwar) {
       this.replyWithNextWarDate(msg);
-      return true;
+      commandFound = true;
     }
 
-    if(msg.content === config.commands.farmred){
-      this.logger.info(`${config.commands.farmred} command was found`);
+    if(!commandFound && msg.content === config.commands.farmred){
       msg.reply('The best place to farm red enemies is 19.4, 19.6, 20.4 and 20.7. For lower levels / less energy, use the following levels: 2.2, 5.8, 11.6 and 13.1');
-      return true;
+      commandFound = true;
     }
 
-    if(msg.content === config.commands.farmblue){
-      this.logger.info(`${config.commands.farmblue} command was found`);
+    if(!commandFound && msg.content === config.commands.farmblue){
       msg.reply('The best place to farm blue enemies is 8.1, 8.3, 8.5, 9.1, 9.3, 13.5 and 13.8');
-      return true;
+      commandFound = true;
     }
 
-    if(msg.content === config.commands.farmgreen){
-      this.logger.info(`${config.commands.farmgreen} command was found`);
+    if(!commandFound && msg.content === config.commands.farmgreen){
       msg.reply('The best place to farm blue enemies is 6.3, 6.6, 7.5 and 17.5');
-      return true;
+      commandFound = true;
     }
 
-    this.logger.info('No commands were found');
-    return false;
+    if(commandFound){
+      this.logger.info(`${msg.content} command was found`);
+    } else {
+      this.logger.info('No commands were found');
+    }
+
+    return commandFound;
   }
 
   checkPhrases(msg){
