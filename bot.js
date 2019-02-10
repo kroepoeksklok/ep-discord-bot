@@ -47,7 +47,8 @@ class Bot {
       self.checkPhrases(msg);
     });
 
-    
+    this.bot.on('error', self.logger.error);
+
     setInterval(function() {
       self.logger.info('War timer expired.');      
 
