@@ -12,7 +12,8 @@ module.exports = {
     'nextwar': '!nextwar',
     'ping': 'ping',
     'farmred': '!farmred',
-    'farmblue': '!farmblue'
+    'farmblue': '!farmblue',
+    'farmgreen': '!farmgreen'
   },
   'minutesToAnnounceWar': 60,
   'idDefaultChannel': '{default_channel_id}',

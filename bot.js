@@ -189,6 +189,12 @@ class Bot {
       return true;
     }
 
+    if(msg.content === config.commands.farmgreen){
+      this.logger.info(`${config.commands.farmgreen} command was found`);
+      msg.reply('The best place to farm blue enemies is 6.3, 6.6, 7.5 and 17.5');
+      return true;
+    }
+
     this.logger.info('No commands were found');
     return false;
   }
