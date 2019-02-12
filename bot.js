@@ -63,50 +63,6 @@ class Bot {
       self.announceWarIfNecessary(today);
       WarData.saveWarData();
     }, 1200000); // Run every 20 minutes
-
-
-    (function loop() {
-      const random = Math.round((Math.random() * (600000)) + 600000); // Generates a random number between 600000 and 1200000 (10m, 20m)
-
-      setTimeout(function() {
-        self.logger.info('Mana timer expired');
-        self.accumulateMana();
-        if(self.checkMana()) {
-          self.useHarmonicSlam();
-        }
-        loop();
-      }, random);
-    }());
-  }
-
-  accumulateMana() {
-    const manaIncrease = Math.floor((Math.random() * 3) + 1); // Generates 1-3 mana.
-    this.mana += manaIncrease;
-    this.logger.info(`Mana: ${this.mana} / 100`);
-  }
-
-  checkMana() {
-    if(this.mana >= 100) return true;
-
-    if(this.mana > 0 && this.mana < 20 && !this.sentFirstManaMessage) {
-      this.sendMessage('*starts gathering mana*');
-      this.sentFirstManaMessage = true;
-    }
-
-    if(this.mana >=97 && this.mana < 100 && !this.sentSecondManaMessage){
-      this.sendMessage('*has begun to glow*');
-      this.sentSecondManaMessage = true;
-    }
-
-    return false;
-  }
-
-  useHarmonicSlam() {
-    this.sentFirstManaMessage = false;
-    this.sentSecondManaMessage = false;
-    this.mana = 0;
-    const randomUser = this.bot.users.random();
-    this.sendMessage(`*uses Harmonic Slam on @${randomUser.tag}!*`);
   }
 
   announceWarIfNecessary(referenceDate) {
