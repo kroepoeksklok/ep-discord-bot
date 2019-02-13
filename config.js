@@ -3,7 +3,8 @@ module.exports = {
   'maximumTimeWithoutJokes': 30000,
   'phrases': {
     'russia': 'RUSSIA',
-    'goodBot': 'GOOD BOT'
+    'goodBot': 'GOOD BOT',
+    'badBot': 'BAD BOT'
   },
   'guildsToSendHelloPhraseTo': '{comma_delimited_server_name_list}',
   'channelsToSendHelloPhraseTo': '{comma_delimited_channel_name_list}',

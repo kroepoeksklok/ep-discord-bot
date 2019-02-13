@@ -14,9 +14,7 @@ class Bot {
     this.bot = new Discord.Client({
       autoReconnect: true
     });
-    this.mana = 0;
-    this.sentFirstManaMessage = false;
-    this.sentSecondManaMessage = false;
+
     this.logger = createLogger.default('Bot');
 
     this.bot.on('ready', function () {
@@ -97,7 +95,7 @@ class Bot {
   }
 
   announceWar(minutesUntilNextWar) {
-    this.sendMessage(`@everyone: the next war starts in ${minutesUntilNextWar} minutes.`, config.idWarChannel);
+    this.sendMessage(`Hello @everyone: the next war starts in approximately ${minutesUntilNextWar} minutes.`, config.idWarChannel);
   }
 
   login() {
@@ -105,7 +103,7 @@ class Bot {
   }
 
   printHelloMessage() {
-    this.logger.info(`Logged in as ${this.bot.user.tag}!`);
+    this.logger.info(`Logged in as ${this.bot.user.tag}.`);
 
     const guildsToSendHelloPhraseTo = config.guildsToSendHelloPhraseTo.split(',');
     const channelsToSendHelloPhraseTo = config.channelsToSendHelloPhraseTo.split(',');
@@ -113,7 +111,7 @@ class Bot {
     this.bot.guilds.forEach(guild => {
       if(guildsToSendHelloPhraseTo.find(g => guild.name === g)) {
         guild.channels.forEach(channel => {
-          if( channelsToSendHelloPhraseTo.find(c => channel.name === c)) {
+          if(channelsToSendHelloPhraseTo.find(c => channel.name === c)) {
             channel.send(config.helloMessage);
           }
         });
@@ -186,6 +184,10 @@ class Bot {
 
     if(messageWithoutCommas.includes(config.phrases.goodBot)){
       msg.reply('why thank you!');
+    }
+
+    if(messageWithoutCommas.includes(config.phrases.badBot)) {
+      msg.reply('I\'m sorry. :(');
     }
   }
 
