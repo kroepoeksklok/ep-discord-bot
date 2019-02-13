@@ -56,7 +56,6 @@ class Events {
     }
 
     if(dayOfWeek == days.WEDNESDAY) {
-      this.logger.info(`hourOfDay = ${hourOfDay}`);
       if(hourOfDay < this.weekWarHourStartEnd) {
         nextWarDate = moment.utc(referenceDate);
         this.setTime(nextWarDate, this.weekWarHourStartEnd, this.weekWarMinuteStartEnd);
