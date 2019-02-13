@@ -167,7 +167,7 @@ class Bot {
   }
 
   checkPhrases(msg){
-    const messageWithoutCommas = this.getStrippedMessage(msg);
+    const messageWithoutCommas = this.getMessageInUpperCaseAndRemoveCommas(msg);
 
     if(messageWithoutCommas.includes(config.phrases.russia)) {
       const now = moment.utc();
@@ -191,9 +191,9 @@ class Bot {
     }
   }
 
-  getStrippedMessage(message) {
+  getMessageInUpperCaseAndRemoveCommas(message) {
     const uppercaseMessage = message.content.toUpperCase();
-    return uppercaseMessage.replace(',', '');
+    return uppercaseMessage.replace(',', ' ');
   }
 
   replyWithNextWarDate(msg) {
