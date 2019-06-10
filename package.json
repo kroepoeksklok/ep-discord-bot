@@ -5,7 +5,7 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "discord.js": "^11.4.2",
+    "discord.js": "^11.5.1",
     "eslint": "^5.13.0",
     "logging": "^3.2.0",
     "moment": "^2.24.0"
